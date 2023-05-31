@@ -1,32 +1,30 @@
 #!/usr/bin/python3
 import sys
-from math import sqrt, floor
+import ctypes
 
+lib = ctypes.CDLL("./libfactorize.so")
+superFactorize = lib.factorize
 
-def findFactors(num):
-    for i in range(2, 100):
-        if num % i == 0:
-            return num // i, i
-    n = floor(sqrt(num))
-    if n % 2 == 0:
-        n += 1
-    while n < num:
-        if num % n == 0:
-            return (n, num // n)
-        n += 2
+def factorize(num):
+    primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+    for p in primes:
+        if num % p == 0:
+            return p
+    num = superFactorize(ctypes.c_long(num))
+    return num if num > 0 else None
 
 
 if len(sys.argv) != 2:
-    print(f"Usage: {sys.argv[0]} <file>", file=sys.stderr)
+    print(f"usage: {sys.argv[0]} <test-file>", file=sys.stderr)
     exit(1)
 
 filename = sys.argv[1]
-with open(filename, "r") as file:
+with open("tests/test00") as file:
     line = file.readline()
     while line:
-        num = int(line)
-        factors = findFactors(num)
-        if factors is not None:
-            p, q = factors
+        num = int(line.strip())
+        q = factorize(num)
+        if q is not None:
+            p = num // q
             print(f"{num}={p}*{q}")
         line = file.readline()
